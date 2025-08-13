@@ -11,7 +11,6 @@ import UserAccount from './pages/UserAccount';
 import OrderTracking from './pages/OrderTracking';
 import Footer from './components/Footer';
 import SplashScreen from './components/SplashScreen';
-import AddProduct from './pages/Addproduct';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import './App.css';
