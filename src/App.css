@@ -1,0 +1,28 @@
+:root {
+  --coffee-dark: #5a3921;
+  --coffee-medium: #8c5e3b;
+  --coffee-light: #c8a27c;
+  --coffee-cream: #f8f5f1;
+  --coffee-accent: #d4a056;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--coffee-cream);
+  color: #333;
+}
+.btn-primary {
+  background-color: var(--coffee-medium);
+  color: white;
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  background-color: var(--coffee-dark);
+}
+.coffee-gradient {
+  background: linear-gradient(135deg, var(--coffee-dark), var(--coffee-medium));
+}
+.hero-pattern {
+  background-color: var(--coffee-cream);
+  background-image: radial-gradient(var(--coffee-light) 0.5px, transparent 0.5px);
+  background-size: 10px 10px;
+}
