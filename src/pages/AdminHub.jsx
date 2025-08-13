@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AddProduct from './Addproduct';
+import AddProduct from './AddProduct';
 import OrderManagement from './OrderManagement';  
 import UserManagement from './UserManagement';
 import SupportCommunication from './SupportCommunication';
