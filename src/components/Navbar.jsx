@@ -173,10 +173,10 @@ const Navbar = () => {
         <div className="md:hidden bg-white px-2 pt-2 pb-3 space-y-1 sm:px-3">
           <Link to="/" className="block px-3 py-2 rounded-md text-base font-medium text-[#8c5e3b] hover:text-[#5a3921] hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>Home</Link>
           <Link to="/products" className="block px-3 py-2 rounded-md text-base font-medium text-[#8c5e3b] hover:text-[#5a3921] hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>Products</Link>
-          {/* {user?.role === 'admin' && (
-            <Link to="/add-product" className="block px-3 py-2 rounded-md text-base font-medium text-[#8c5e3b] hover:text-[#5a3921] hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>Add Products</Link>
+          {user?.role === 'admin' && (
+            <Link to="/admin-hub" className="block px-3 py-2 rounded-md text-base font-medium text-[#8c5e3b] hover:text-[#5a3921] hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>Admin Hub</Link>
           )}
-          <Link to="/track-order" className="block px-3 py-2 rounded-md text-base font-medium text-[#8c5e3b] hover:text-[#5a3921] hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>Track Order</Link> */}
+          {/* <Link to="/track-order" className="block px-3 py-2 rounded-md text-base font-medium text-[#8c5e3b] hover:text-[#5a3921] hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>Track Order</Link> */}
           <Link to="/about" className="block px-3 py-2 rounded-md text-base font-medium text-[#8c5e3b] hover:text-[#5a3921] hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>About us</Link>
           <Link to="/contact" className="block px-3 py-2 rounded-md text-base font-medium text-[#8c5e3b] hover:text-[#5a3921] hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>Contact</Link>
           <div className="relative mt-3 px-3">
