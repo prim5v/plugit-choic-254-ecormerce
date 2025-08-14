@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ShoppingCart, Heart, Share2, ArrowLeft, Star, Truck, Shield, RotateCw } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
@@ -11,6 +11,7 @@ const ProductDetails = () => {
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   const baseImageUrl = 'https://biz4293.pythonanywhere.com/static/images/';
 
@@ -25,7 +26,6 @@ const ProductDetails = () => {
     if (image_url.startsWith('/static')) {
       return `https://biz4293.pythonanywhere.com${image_url}`;
     }
-    // treat as filename
     return baseImageUrl + image_url;
   };
 
@@ -33,7 +33,9 @@ const ProductDetails = () => {
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`https://biz4293.pythonanywhere.com/api/get_products_details/${productId}`);
+        const response = await axios.get(
+          `https://biz4293.pythonanywhere.com/api/get_products_details/${productId}`
+        );
         if (response.data) {
           setProduct(response.data);
         } else {
@@ -56,6 +58,20 @@ const ProductDetails = () => {
       addToCart(product, quantity);
     }
   };
+
+const handleBuyNow = () => {
+  if (product) {
+    navigate('/Buy-Now', {
+      state: {
+        productName: product.name,
+        amount: product.selling_price * quantity, // Pass total price for quantity
+        productId: product.id,
+        quantity, // optional if you want BuyNow to know the qty
+      },
+    });
+  }
+};
+
 
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value);
@@ -140,10 +156,10 @@ const ProductDetails = () => {
                 </div>
                 <span className="ml-2 text-gray-600 text-sm">(24 reviews)</span>
               </div>
-              <p className="text-2xl font-bold text-[#8c5e3b] mb-4">Ksh{product.selling_price}</p>
+              <p className="text-2xl font-bold text-[#8c5e3b] mb-4">KES{product.selling_price}</p>
               <p className="text-gray-600 mb-6">
                 {product.description ||
-                  'Experience premium sound quality with these state-of-the-art electronic gadgets. Designed for comfort and performance, this product delivers an exceptional user experience.'}
+                  'Experience premium sound quality with these state-of-the-art electronic gadgets.'}
               </p>
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-700 mb-2">Brand</h3>
@@ -194,13 +210,13 @@ const ProductDetails = () => {
                 >
                   <ShoppingCart size={18} className="mr-2" /> Add to Cart
                 </button>
-                <Link
-                  to="/checkout"
+                <button
+                  onClick={handleBuyNow}
                   className="bg-[#d4a056] hover:bg-[#c8a27c] text-white px-8 py-3 rounded-md font-medium text-center"
-                  onClick={() => addToCart(product, quantity)}
+                  disabled={product.stock_quantity <= 0}
                 >
                   Buy Now
-                </Link>
+                </button>
               </div>
               {/* Product Features */}
               <div className="border-t border-gray-200 pt-6">
@@ -236,16 +252,7 @@ const ProductDetails = () => {
           <div>
             <p className="text-gray-600 mb-4">
               {product.description ||
-                `
-                Experience the ultimate in sound quality with our premium electronic gadgets. 
-                Designed with the latest technology, these devices deliver crystal clear audio and deep bass for an immersive listening experience.
-              `}
-            </p>
-            <p className="text-gray-600 mb-4">
-              Our products are crafted with high-quality materials to ensure durability and comfort during extended use. The sleek, modern design complements any style while providing exceptional performance.
-            </p>
-            <p className="text-gray-600">
-              Whether you're a music enthusiast, a professional, or a casual listener, our electronic gadgets offer the perfect blend of style, comfort, and superior sound quality to enhance your audio experience.
+                'Experience the ultimate in sound quality with our premium electronic gadgets.'}
             </p>
           </div>
         </div>

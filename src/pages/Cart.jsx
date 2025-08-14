@@ -89,7 +89,7 @@ const Cart = () => {
                           <p className="text-sm text-gray-500">{item.brand}</p>
                         </div>
                         <p className="text-lg font-bold text-[#8c5e3b] mt-2 sm:mt-0">
-                          Ksh{item.selling_price}
+                          KES{item.selling_price}
                         </p>
                       </div>
                       <div className="flex flex-col sm:flex-row justify-between items-center mt-4">
@@ -137,7 +137,7 @@ const Cart = () => {
                   <span className="text-gray-600">
                     Subtotal ({cartItems.reduce((acc, item) => acc + item.quantity, 0)} items)
                   </span>
-                  <span className="font-medium">Ksh{total.toFixed(2)}</span>
+                  <span className="font-medium">KES{total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
@@ -145,12 +145,12 @@ const Cart = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
-                  <span className="font-medium">Ksh{(total * 0.16).toFixed(2)}</span>
+                  <span className="font-medium">KES{(total * 0.16).toFixed(2)}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-4 mt-4">
                   <div className="flex justify-between">
                     <span className="text-lg font-bold text-[#5a3921]">Total</span>
-                    <span className="text-lg font-bold text-[#8c5e3b]">Ksh{(total * 1.16).toFixed(2)}</span>
+                    <span className="text-lg font-bold text-[#8c5e3b]">KES{(total * 1.16).toFixed(2)}</span>
                   </div>
                 </div>
               </div>

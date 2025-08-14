@@ -15,6 +15,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import './App.css';
 import AdminHub from './pages/AdminHub';
+import BuyNow from './pages/BuyNow';
 
 // AdminRoute component to protect admin routes
 const AdminRoute = ({ children }) => {
@@ -60,6 +61,7 @@ export function App() {
                 <Route path="/product/:productId" element={<ProductDetails />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/Buy-Now" element={<BuyNow/>} />
                 <Route path="/track-order/:order_id" element={<OrderTracking />} />
                 <Route path="/track-order" element={<OrderTracking />} />
                 <Route path="/account/*" element={<UserAccount />} />
