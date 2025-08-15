@@ -251,7 +251,8 @@ const SupportCommunication = () => {
         </div>
 
         {/* Mobile fallback */}
-        {/* Mobile view */}
+        <div className="flex flex-col items-center justify-center p-4 w-full md:hidden">
+          {/* Mobile view */}
 <div className="flex flex-col w-full md:hidden">
   {selectedUser ? (
     <>
@@ -380,5 +381,10 @@ const SupportCommunication = () => {
   )}
 </div>
 
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default SupportCommunication;
