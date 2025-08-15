@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { io } from "socket.io-client";
 
-const ROLES = ['admin', 'customer'];
-const STATUSES = ['active', 'inactive', 'banned'];
+const ROLES = ["admin", "customer"];
+const STATUSES = ["active", "inactive", "banned"];
 const PAGE_SIZE = 5;
+const API_BASE = "https://biz4293.pythonanywhere.com";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -14,15 +16,15 @@ const UserManagement = () => {
   const [successMessage, setSuccessMessage] = useState(null);
 
   // Filters & pagination state
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
   const [page, setPage] = useState(1);
 
   // For editing
   const [editingUserId, setEditingUserId] = useState(null);
-  const [editRole, setEditRole] = useState('');
-  const [editStatus, setEditStatus] = useState('');
+  const [editRole, setEditRole] = useState("");
+  const [editStatus, setEditStatus] = useState("");
 
   // Calculate total pages for pagination
   const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
@@ -31,7 +33,7 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
-    setSuccessMessage(null); // Clear old messages on each fetch
+    setSuccessMessage(null);
 
     try {
       const params = {
@@ -42,36 +44,74 @@ const UserManagement = () => {
         limit: PAGE_SIZE,
       };
 
-      const response = await axios.get('https://biz4293.pythonanywhere.com/api/get_users', { params });
+      const response = await axios.get(`${API_BASE}/api/get_users`, { params });
 
       setUsers(response.data.users || []);
       setTotalUsers(response.data.total || 0);
     } catch (err) {
-      setError('Failed to load users.');
+      setError("Failed to load users.");
     }
     setLoading(false);
   };
 
+  // Initial fetch and refetch when filters change
   useEffect(() => {
     fetchUsers();
   }, [searchTerm, filterRole, filterStatus, page]);
 
+  // Real-time updates via socket.io
+  useEffect(() => {
+    const socket = io(API_BASE, {
+      transports: ["websocket"],
+    });
+
+    socket.on("connect", () => {
+      console.log("Connected to socket.io server");
+    });
+
+    socket.on("user_added", () => {
+      console.log("New user added - refreshing list");
+      fetchUsers();
+    });
+
+    socket.on("user_updated", () => {
+      console.log("User updated - refreshing list");
+      fetchUsers();
+    });
+
+    socket.on("user_deleted", () => {
+      console.log("User deleted - refreshing list");
+      fetchUsers();
+    });
+
+    socket.on("disconnect", () => {
+      console.warn("Socket disconnected");
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   // Delete user handler
   const handleDelete = async (user_id) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
 
     try {
-      await axios.delete(`https://biz4293.pythonanywhere.com/api/delete_users/${user_id}`);
-      setSuccessMessage('User deleted successfully.');
+      await axios.delete(`${API_BASE}/api/delete_users/${user_id}`);
+      setSuccessMessage("User deleted successfully.");
       setError(null);
-      await fetchUsers();  // Refresh user list
+      await fetchUsers();
     } catch (err) {
-      setError('Failed to delete user: ' + (err.response?.data?.error || err.message));
+      setError(
+        "Failed to delete user: " +
+          (err.response?.data?.error || err.message)
+      );
       setSuccessMessage(null);
     }
   };
 
-  // Start editing user: show the edit card and populate fields
+  // Start editing user
   const startEditing = (user) => {
     setEditingUserId(user.user_id);
     setEditRole(user.role);
@@ -83,8 +123,8 @@ const UserManagement = () => {
   // Cancel editing
   const cancelEditing = () => {
     setEditingUserId(null);
-    setEditRole('');
-    setEditStatus('');
+    setEditRole("");
+    setEditStatus("");
     setError(null);
     setSuccessMessage(null);
   };
@@ -95,15 +135,18 @@ const UserManagement = () => {
 
     try {
       await axios.patch(
-        `https://biz4293.pythonanywhere.com/api/update_user/${editingUserId}`,
+        `${API_BASE}/api/update_user/${editingUserId}`,
         { role: editRole, status: editStatus }
       );
-      setSuccessMessage('User updated successfully.');
+      setSuccessMessage("User updated successfully.");
       setError(null);
       setEditingUserId(null);
       fetchUsers();
     } catch (err) {
-      setError('Failed to update user: ' + (err.response?.data?.error || err.message));
+      setError(
+        "Failed to update user: " +
+          (err.response?.data?.error || err.message)
+      );
       setSuccessMessage(null);
     }
   };
@@ -114,10 +157,14 @@ const UserManagement = () => {
 
       {/* Success & Error Messages */}
       {successMessage && (
-        <div className="mb-4 p-3 bg-green-100 text-green-800 rounded">{successMessage}</div>
+        <div className="mb-4 p-3 bg-green-100 text-green-800 rounded">
+          {successMessage}
+        </div>
       )}
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded">{error}</div>
+        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded">
+          {error}
+        </div>
       )}
 
       {/* Filters */}
@@ -127,26 +174,39 @@ const UserManagement = () => {
           placeholder="Search by name or email"
           className="border px-3 py-2 rounded-md w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-[#8c5e3b]"
           value={searchTerm}
-          onChange={(e) => { setPage(1); setSearchTerm(e.target.value); }}
+          onChange={(e) => {
+            setPage(1);
+            setSearchTerm(e.target.value);
+          }}
         />
         <select
           value={filterRole}
-          onChange={(e) => { setPage(1); setFilterRole(e.target.value); }}
+          onChange={(e) => {
+            setPage(1);
+            setFilterRole(e.target.value);
+          }}
           className="border px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c5e3b]"
         >
           <option value="">All Roles</option>
-          {ROLES.map(role => (
-            <option key={role} value={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</option>
+          {ROLES.map((role) => (
+            <option key={role} value={role}>
+              {role.charAt(0).toUpperCase() + role.slice(1)}
+            </option>
           ))}
         </select>
         <select
           value={filterStatus}
-          onChange={(e) => { setPage(1); setFilterStatus(e.target.value); }}
+          onChange={(e) => {
+            setPage(1);
+            setFilterStatus(e.target.value);
+          }}
           className="border px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c5e3b]"
         >
           <option value="">All Statuses</option>
-          {STATUSES.map(status => (
-            <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
+          {STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </option>
           ))}
         </select>
       </div>
@@ -171,16 +231,18 @@ const UserManagement = () => {
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="text-center p-6">No users found.</td>
+                  <td colSpan="7" className="text-center p-6">
+                    No users found.
+                  </td>
                 </tr>
               ) : (
-                users.map(user => (
+                users.map((user) => (
                   <React.Fragment key={user.user_id}>
                     <tr className="border-t border-gray-300 hover:bg-gray-100">
                       <td className="p-2">
                         {user.profile_photo ? (
                           <img
-                            src={`https://biz4293.pythonanywhere.com/static/images/${user.profile_photo}`}
+                            src={`${API_BASE}/static/images/${user.profile_photo}`}
                             alt="profile"
                             className="h-10 w-10 rounded-full object-cover"
                           />
@@ -197,7 +259,7 @@ const UserManagement = () => {
                       <td className="p-2">
                         {user.last_login
                           ? new Date(user.last_login).toLocaleString()
-                          : 'Never'}
+                          : "Never"}
                       </td>
                       <td className="p-2 space-x-2">
                         <button
@@ -215,35 +277,41 @@ const UserManagement = () => {
                       </td>
                     </tr>
 
-                    {/* Edit card for this user */}
                     {editingUserId === user.user_id && (
                       <tr>
                         <td colSpan="7" className="bg-gray-50 p-4">
                           <div className="max-w-md mx-auto bg-white rounded shadow p-4">
-                            <h3 className="text-xl font-semibold mb-4">Edit User: {user.name}</h3>
+                            <h3 className="text-xl font-semibold mb-4">
+                              Edit User: {user.name}
+                            </h3>
 
-                            <label className="block mb-2 font-medium">Role:</label>
+                            <label className="block mb-2 font-medium">
+                              Role:
+                            </label>
                             <select
                               value={editRole}
                               onChange={(e) => setEditRole(e.target.value)}
                               className="w-full border px-3 py-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-[#8c5e3b]"
                             >
-                              {ROLES.map(role => (
+                              {ROLES.map((role) => (
                                 <option key={role} value={role}>
                                   {role.charAt(0).toUpperCase() + role.slice(1)}
                                 </option>
                               ))}
                             </select>
 
-                            <label className="block mb-2 font-medium">Status:</label>
+                            <label className="block mb-2 font-medium">
+                              Status:
+                            </label>
                             <select
                               value={editStatus}
                               onChange={(e) => setEditStatus(e.target.value)}
                               className="w-full border px-3 py-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-[#8c5e3b]"
                             >
-                              {STATUSES.map(status => (
+                              {STATUSES.map((status) => (
                                 <option key={status} value={status}>
-                                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                                  {status.charAt(0).toUpperCase() +
+                                    status.slice(1)}
                                 </option>
                               ))}
                             </select>
@@ -275,10 +343,12 @@ const UserManagement = () => {
           {/* Pagination Controls */}
           <div className="mt-6 flex justify-center items-center space-x-4">
             <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
               className={`px-4 py-2 rounded border ${
-                page === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200'
+                page === 1
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-gray-200"
               }`}
             >
               Previous
@@ -289,10 +359,12 @@ const UserManagement = () => {
             </span>
 
             <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className={`px-4 py-2 rounded border ${
-                page === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200'
+                page === totalPages
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-gray-200"
               }`}
             >
               Next
